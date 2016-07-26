@@ -21,8 +21,11 @@ from sklearn.cross_validation import train_test_split,KFold
 from sklearn.linear_model import LogisticRegression
 from sknn.mlp import Classifier, Layer
 from keras.preprocessing.text import Tokenizer
-from keras.layers import Input, Dense,Dropout, Activation, Flatten,Convolution1D, MaxPooling1D
+from keras.layers import Embedding,Input, Dense,Dropout, Activation, Flatten,Convolution1D, MaxPooling1D
 from keras.models import Sequential,Model
+from keras.preprocessing import sequence
+import keras.preprocessing.sequence as ks
+from keras.preprocessing.sequence import pad_sequences
 #############################################################################################
 #Preprocessing
 #############################################################################################
@@ -110,7 +113,7 @@ print(single_layer_accuracy.mean())
 0.6285
 # Bigram, 'memory error' during traforming to array, stop using bigram so far. 
 ##########This result is suspecious, because there is a huge difference between sklearn and keras ########
-################################## clear all the histroy, and then move on to task 2 #####################
+################################## end of task 1 ##########################################################
 # Task 2 : MLP, word vector
 # The strategy. For this task, use word vector to replace the token counts.
 # The word vector downloaded Glove 6B word vector, I use 50 Dimension because my computer capacity.
@@ -215,7 +218,7 @@ print(Task2_Bigram_Ans)
 0.6725
 # I also tried units with 50, 100, 150, 250
 # The answer is 0.629, 0.678, 0.6375, 0.6405,
-####################### clear all the history and move on to task 3 ############################
+############################# end of task 2 ###################################################
 # Task 3 : Convolutional neural network
 # For this task, use word vector to replace each token. 
 ################################################################################################
@@ -223,6 +226,70 @@ Data=pd.read_csv("/home/admin1/Documents/Machine_learning/assignment3/Full_Data.
 Data=Data.drop(Data.columns[[0]], axis=1)
 X=Data['text']
 Y=Data['isPos']
+# Clean the data, remove 's, 'nt, 've
+# Code reference : https://github.com/yoonkim/CNN_sentence
+def clean_string(string):
+    """
+    Tokenization/string cleaning for all datasets except for SST.
+    Every dataset is lower cased except for TREC
+    """     
+    string = re.sub(r"\'s", " \'s", string) 
+    string = re.sub(r"\'ve", " \'ve", string) 
+    string = re.sub(r"n\'t", " n\'t", string) 
+    string = re.sub(r"\'re", " \'re", string) 
+    string = re.sub(r"\'d", " \'d", string) 
+    string = re.sub(r"\'ll", " \'ll", string) 
+    string = re.sub(r",", " , ", string) 
+    string = re.sub(r"!", " ! ", string) 
+    string = re.sub(r"\(", " \( ", string) 
+    string = re.sub(r"\)", " \) ", string) 
+    string = re.sub(r"\?", " \? ", string)  
+    return string.strip() 
 
+myTexts=[]
+for each in X:
+	myEach=clean_string(each)
+	myTexts +=[myEach]
+# tokenize texts into tokens 
+tokenizer = Tokenizer(nb_words=800)
+tokenizer.fit_on_texts(myTexts)
+sequences = tokenizer.texts_to_sequences(myTexts)
+word_index = tokenizer.word_index
+# trim the length of each sequence to the same length, I set 300.
+data = pad_sequences(sequences, maxlen=300)
+y = np.zeros((len(myTexts), 1))
 
+for i in range(len(myTexts)):
+	if i < 1000:
+		y[i]=[True] # positive
+	else:
+		y[i]=[False] # negative
+
+scores_conv = []
+kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+for train_index, test_index in kf_total:
+	myTrain=data[train_index]
+	myTrainResponse=y[train_index]
+	myTest=data[test_index]
+	expected=y[test_index]
+	model = Sequential()
+	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=1))
+	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
+	model.add(Flatten())
+	model.add(Dense(200))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(1))
+	model.add(Activation('sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
+	score = model.evaluate(myTest, expected)
+	scores_conv.append(score[1])
+	
+with open('task3_output.txt', 'wb') as f:
+    pickle.dump(scores_conv, f)
+# If want to load the data. 
+with open('task3_output.txt', 'rb') as f:
+    a = pickle.load(f)
 
