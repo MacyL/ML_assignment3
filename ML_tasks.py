@@ -30,14 +30,14 @@ pathPos = "/home/admin1/Documents/Machine_learning/assignment3/pos/*.txt"
 pathNeg = "/home/admin1/Documents/Machine_learning/assignment3/neg/*.txt"
 filesPos = glob.glob(pathPos)
 filesNeg = glob.glob(pathNeg)   
-MyBigFile=pd.DataFrame()
+FullData=pd.DataFrame()
 for name in filesPos:
 	f=open(name,'r').read()
 	f=re.sub(r'\d+','',f)
 	# Remove duplicated white space.
 	f=" ".join(f.split())
 	isPos=["Positive"]
-	MyBigFile=MyBigFile.append(pd.DataFrame({'isPos':isPos, 'text':f}))
+	FullData=FullData.append(pd.DataFrame({'isPos':isPos, 'text':f}))
 
 for names in filesNeg:
 	f=open(names,'r').read()
@@ -45,7 +45,21 @@ for names in filesNeg:
 	# Remove duplicated white space.
 	f=" ".join(f.split())
 	isPos=["Negative"]
-	MyBigFile=MyBigFile.append(pd.DataFrame({'isPos':isPos, 'text':f}))
+	FullData=FullData.append(pd.DataFrame({'isPos':isPos, 'text':f}))
 # Save to file
-MyBigFile.to_csv("My_Big_File.csv")
+FullData.to_csv("Full_Data.csv")
+######################### end of preprocess#######################################################
+##################################################################################################
+# Task 1: Logistic regression
+# The stretagy, sklear provide the function to extract features (tokens or bigram).
+# Feed a logistic regression with these features. 
+# Then sklearn produce 10 fold cross validation. 
+# Print out all the accuracy (10 accuracy values), calculate the mean.
+##################################################################################################
+# take the class column (Positive, Negative) as Y and the text as X. 
+X=FullData['text']
+Y=FullData['isPos']
+# extract features from X. 
+
+
 
