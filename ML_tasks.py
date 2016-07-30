@@ -226,6 +226,7 @@ Data=pd.read_csv("/home/admin1/Documents/Machine_learning/assignment3/Full_Data.
 Data=Data.drop(Data.columns[[0]], axis=1)
 X=Data['text']
 Y=Data['isPos']
+
 # Clean the data, remove 's, 'nt, 've
 # Code reference : https://github.com/yoonkim/CNN_sentence
 def clean_string(string):
@@ -250,6 +251,7 @@ myTexts=[]
 for each in X:
 	myEach=clean_string(each)
 	myTexts +=[myEach]
+	
 # tokenize texts into tokens 
 tokenizer = Tokenizer(nb_words=800)
 tokenizer.fit_on_texts(myTexts)
@@ -292,4 +294,37 @@ with open('task3_output.txt', 'wb') as f:
 # If want to load the data. 
 with open('task3_output.txt', 'rb') as f:
     a = pickle.load(f)
+np.mean(a)
+0.768
 
+# second time trying 
+scores_conv = []
+kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+for train_index, test_index in kf_total:
+	myTrain=data[train_index]
+	myTrainResponse=y[train_index]
+	myTest=data[test_index]
+	expected=y[test_index]
+	model = Sequential()
+	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=1))
+	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
+	model.add(Flatten())
+	model.add(Dense(250))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(150))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(1))
+	model.add(Activation('sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
+	score = model.evaluate(myTest, expected)
+	scores_conv.append(score[1])
+
+with open('task3_output_second.txt', 'wb') as f:
+    pickle.dump(scores_conv, f)
+    
+np.mean(scores_conv)
+0.793
