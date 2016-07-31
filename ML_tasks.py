@@ -314,7 +314,7 @@ np.mean(a)
 0.768
 
 
-# second time trying. It is still not a correct I  
+# second time trying. It is still not a correct.
 scores_conv2 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -323,7 +323,7 @@ for train_index, test_index in kf_total:
 	myTest=data[test_index]
 	expected=y[test_index]
 	model = Sequential()
-	model.add(Embedding(len(word_index) + 1,50,input_length=300,weights=[embedding_matrix],dropout=0.2))
+	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
 	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=2))
 	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
 	model.add(Flatten())
@@ -341,7 +341,7 @@ for train_index, test_index in kf_total:
 	scores_conv2.append(score[1])
 
 np.mean(scores_conv)
-1
+0.1
 # I didn't expect this, it might due to overfitting. Also, I wordered what happened to my code. 
 
 WordVector=open("/home/admin1/Documents/Machine_learning/assignment3/glove_6B/glove.6B.50d.txt").readlines()
@@ -385,12 +385,10 @@ for train_index, test_index in kf_total:
 	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
 	score = model.evaluate(myTest, expected)
 	scores_conv5.append(score[1])
-	
-# I am waiting for this one (31st of July)
 
-
-
-
+np.mean(scores_conv5)
+0.50
+# This model does not learning at all!
 
 # Fourth time trying, unfinished. This model require the input as a four dimensions ndarray
 
