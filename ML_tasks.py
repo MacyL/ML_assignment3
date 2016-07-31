@@ -313,7 +313,8 @@ with open('task3_output.txt', 'rb') as f:
 np.mean(a)
 0.768
 
-# second time trying. not really correct  
+
+# second time trying. It is still not a correct I  
 scores_conv2 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -339,13 +340,59 @@ for train_index, test_index in kf_total:
 	score = model.evaluate(myTest, expected)
 	scores_conv2.append(score[1])
 
-with open('task3_output_second.txt', 'wb') as f:
-    pickle.dump(scores_conv, f)
-    
 np.mean(scores_conv)
+1
+# I didn't expect this, it might due to overfitting. Also, I wordered what happened to my code. 
+
+WordVector=open("/home/admin1/Documents/Machine_learning/assignment3/glove_6B/glove.6B.50d.txt").readlines()
+#read in as list
+myDictionary = dict()
+for each in WordVector:
+	each=each.split()
+	key=each[0]
+	vec=np.array([float(tmp) for tmp in each[1:]])
+	myDictionary[key]=vec
+
+# create an numpy ndarray
+X_CNN = np.zeros((len(data),300,embedding_dim))
+
+embedding_matrix = np.zeros((len(word_index) + 1, 50))
+
+for word, i in word_index.items():
+	embedding_vector = myDictionary.get(key)
+	if embedding_vector is not None:
+        # words not found in embedding index will be all-zeros.
+        	embedding_matrix[i] = embedding_vector
+  
+scores_conv5 = []
+kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+for train_index, test_index in kf_total:
+	myTrain=data[train_index]
+	myTrainResponse=y[train_index]
+	myTest=data[test_index]
+	expected=y[test_index]
+	model = Sequential()
+	model.add(Embedding(len(word_index) + 1,50,input_length=300, weights=[embedding_matrix],dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=2))
+	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
+	model.add(Flatten())
+	model.add(Dense(200))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(1))
+	model.add(Activation('sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
+	score = model.evaluate(myTest, expected)
+	scores_conv5.append(score[1])
+	
+# I am waiting for this one (31st of July)
 
 
-# Third time trying, unfinished. This model require the input as a four dimensions ndarray
+
+
+
+# Fourth time trying, unfinished. This model require the input as a four dimensions ndarray
 
 # Embedding
 max_features = 40023
