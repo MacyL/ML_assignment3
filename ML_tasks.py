@@ -413,12 +413,23 @@ np.mean(scores_conv6)
 
 
 # Fifth time trail.  This model require the input as a four dimensions ndarray
-# It is the last day of working on this assignment, I don't think I can finish this in time.
-# This model has not been tested. 
+# But sadly, my computer crashes when everytime I try to run this model 
+data = pad_sequences(sequences, maxlen=150)
+
+X_CNN = np.zeros((len(data), 150,50))
+# This code idea came from Marlon Betz
+# Here, I have my word vector dictionary created and my data already tranformed to numric sequence. 
+# Hence, this part is not exactly the same like his code.   
+for i in range(len(data)):
+	oneData = data[i]
+	token_index = 0
+	for t in oneData:
+		X_CNN[i,token_index] = embedding_matrix[t]
+	token_index +=1
 
 # Embedding
 max_features = 40023
-maxlen = 300
+maxlen = 150
 embedding_size = 50
 nb_feature_maps=25
 
@@ -432,17 +443,12 @@ batch_size=200
 nb_epoch=2
 nb_pool=2
 
-# create the full dataset 
-X_cnn = np.zeros((len(data),1, maxlen ,embedding_size))
-# I have embedding matrix ready and I have 'data' ( text and word_idex ready)
-# I need to figure it out how to put these two in this vector. 
-
-scores_conv4 = []
-kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+scores_conv7 = []
+kf_total = KFold(len(X_CNN), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
-	myTrain=data[train_index]
+	myTrain=X_CNN[train_index]
 	myTrainResponse=y[train_index]
-	myTest=data[test_index]
+	myTest=X_CNN[test_index]
 	expected=y[test_index]
 	model = Sequential()
 	model.add(Convolution2D(nb_filter,tri_gram, tri_gram, border_mode='valid', input_shape= (1, maxlen, embedding_size)))
@@ -452,17 +458,15 @@ for train_index, test_index in kf_total:
 	model.add(MaxPooling2D(pool_size=(2,2)))
 	model.add(Dropout(0.2))
 	model.add(Flatten())
-	model.add(Dense(150))
+	model.add(Dense(100))
 	model.add(Activation('relu'))
 	model.add(Dropout(0.2))
 	model.add(Dense(1))
 	model.add(Activation('sigmoid'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=2)
-	score = model.evaluate(myTest, expected)
-	scores_conv4.append(score[1])
+	model.fit(myTrain, myTrainResponse.reshape(-1,1,maxlen,embedding_size),batch_size=200, nb_epoch=5)
+	score = model.evaluate(myTest.reshape(-1,1,maxlen,embedding_size), expected)
+	scores_conv7.append(score[1])
 	
-#I would like to use convolutional 2D function to test this dataset. 
-#I guess, with 2 dimentional data input, CNN model can get a comprehensive information 
-#rather than treating the word vector as a weighting matrix merely. 
-#But my progress was too slow for this task. I have the model but no time to test it. 
+# I have tried hard to make it work, but my computer kept crashing. so I have no result from this CNN model. 
+# I wonder it is due to my computer capacity or the code has serious problem in it. 
