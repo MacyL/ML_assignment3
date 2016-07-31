@@ -341,7 +341,7 @@ for train_index, test_index in kf_total:
 	scores_conv2.append(score[1])
 
 np.mean(scores_conv)
-0.1
+1
 # I didn't expect this, it might due to overfitting. Also, I wordered what happened to my code. 
 
 WordVector=open("/home/admin1/Documents/Machine_learning/assignment3/glove_6B/glove.6B.50d.txt").readlines()
@@ -391,6 +391,7 @@ np.mean(scores_conv5)
 # This model does not learning at all!
 
 # Fourth time trying, unfinished. This model require the input as a four dimensions ndarray
+# It is the last day of working on this assignment, I don't think I can finish this in time. so I can't try if this model really works. 
 
 # Embedding
 max_features = 40023
@@ -410,8 +411,8 @@ nb_pool=2
 
 # create the full dataset 
 X_cnn = np.zeros((len(data),1, maxlen ,embedding_size))
-
-
+# I have embedding matrix ready and I have 'data' ( text and word_idex ready)
+# I need to figure it out how to put these two in this vector. 
 
 scores_conv4 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
@@ -437,3 +438,4 @@ for train_index, test_index in kf_total:
 	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=2)
 	score = model.evaluate(myTest, expected)
 	scores_conv4.append(score[1])
+
