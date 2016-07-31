@@ -22,6 +22,7 @@ from sklearn.linear_model import LogisticRegression
 from sknn.mlp import Classifier, Layer
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding,Input, Dense,Dropout, Activation, Flatten,Convolution1D, MaxPooling1D
+from keras.layers import Convolution2D, MaxPooling2D
 from keras.models import Sequential,Model
 from keras.preprocessing import sequence
 import keras.preprocessing.sequence as ks
@@ -117,7 +118,7 @@ print(single_layer_accuracy.mean())
 # Task 2 : MLP, word vector
 # The strategy. For this task, use word vector to replace the token counts.
 # The word vector downloaded Glove 6B word vector, I use 50 Dimension because my computer capacity.
-# Because Sklearn hasn't release 0.8 version, I used Sknn for MLP. Also try Keras. 
+# Because Sklearn hasn't release 0.8 version, I used Sknn for MLP. I also tried Keras, but it couldn't work for me. 
 ###########################################################################################################
 WordVector=open("/home/admin1/Documents/Machine_learning/assignment3/glove_6B/glove.6B.50d.txt").readlines()
 #read in as list
