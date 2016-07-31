@@ -22,7 +22,7 @@ from sklearn.linear_model import LogisticRegression
 from sknn.mlp import Classifier, Layer
 from keras.preprocessing.text import Tokenizer
 from keras.layers import Embedding,Input, Dense,Dropout, Activation, Flatten,Convolution1D, MaxPooling1D
-from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers import Reshape, Convolution2D, MaxPooling2D
 from keras.models import Sequential,Model
 from keras.preprocessing import sequence
 import keras.preprocessing.sequence as ks
