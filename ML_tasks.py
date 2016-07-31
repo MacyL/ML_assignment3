@@ -282,7 +282,7 @@ embedding_layer = Embedding(len(word_index) + 1,
                             trainable=False)
 
 
-# first try, purely just word sequence, I haven't input word vector 
+# first trail, purely just word sequence.
 scores_conv = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -314,7 +314,7 @@ np.mean(a)
 0.768
 
 
-# second time trying. It is still not a correct.
+# second trail. 
 scores_conv2 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -344,6 +344,7 @@ np.mean(scores_conv)
 1
 # I didn't expect this, it might due to overfitting. Also, I wordered what happened to my code. 
 
+# Third trail 
 WordVector=open("/home/admin1/Documents/Machine_learning/assignment3/glove_6B/glove.6B.50d.txt").readlines()
 #read in as list
 myDictionary = dict()
@@ -356,14 +357,6 @@ for each in WordVector:
 # create an numpy ndarray
 X_CNN = np.zeros((len(data),300,embedding_dim))
 
-embedding_matrix = np.zeros((len(word_index) + 1, 50))
-
-for word, i in word_index.items():
-	embedding_vector = myDictionary.get(key)
-	if embedding_vector is not None:
-        # words not found in embedding index will be all-zeros.
-        	embedding_matrix[i] = embedding_vector
-  
 scores_conv5 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -388,10 +381,38 @@ for train_index, test_index in kf_total:
 
 np.mean(scores_conv5)
 0.50
-# This model does not learning at all!
+# This model does not perform well, but I have my word vector input as weighting matrix, I supposed this should work perfectly. 
+# Fourth trail 
+# Input one more layer 
 
-# Fourth time trying, unfinished. This model require the input as a four dimensions ndarray
-# It is the last day of working on this assignment, I don't think I can finish this in time. so I can't try if this model really works. 
+scores_conv6 = []
+kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+for train_index, test_index in kf_total:
+	myTrain=data[train_index]
+	myTrainResponse=y[train_index]
+	myTest=data[test_index]
+	expected=y[test_index]
+	model = Sequential()
+	model.add(Embedding(len(word_index) + 1,50,input_length=300, weights=[embedding_matrix],dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=10,border_mode='valid',activation='relu',subsample_length=1))
+	model.add(Convolution1D(nb_filter=100,filter_length=5,border_mode='valid',activation='relu',subsample_length=2))
+	model.add(MaxPooling1D(pool_length=model.output_shape[1]))	
+	model.add(Flatten())
+	model.add(Dense(200))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(1))
+	model.add(Activation('sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=5)
+	score = model.evaluate(myTest, expected)
+	scores_conv6.append(score[1])
+# For this model, the nb_epoch ran to the second time and then the accuracy reached 1. So I reduced the nb_epoch number to 5. 
+
+
+# Fifth time trail.  This model require the input as a four dimensions ndarray
+# It is the last day of working on this assignment, I don't think I can finish this in time.
+# This model has not been tested. 
 
 # Embedding
 max_features = 40023
@@ -438,4 +459,8 @@ for train_index, test_index in kf_total:
 	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=2)
 	score = model.evaluate(myTest, expected)
 	scores_conv4.append(score[1])
-
+	
+#I would like to use convolutional 2D function to test this dataset. 
+#I guess, with 2 dimentional data input, CNN model can get a comprehensive information 
+#rather than treating the word vector as a weighting matrix merely. 
+#But my progress was too slow for this task. I have the model but no time to test it. 
