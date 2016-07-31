@@ -268,7 +268,21 @@ for i in range(len(myTexts)):
 	else:
 		y[i]=[False] # negative
 
-# first try 
+embedding_matrix = np.zeros((len(word_index) + 1, 50))
+for word, i in word_index.items():
+	embedding_vector = myDictionary.get(key)
+	if embedding_vector is not None:
+        # words not found in embedding index will be all-zeros.
+        	embedding_matrix[i] = embedding_vector
+
+embedding_layer = Embedding(len(word_index) + 1,
+                            50,
+                            weights=[embedding_matrix],
+                            input_length=300,
+                            trainable=False)
+
+
+# first try, purely just word sequence, I haven't input word vector 
 scores_conv = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -300,7 +314,7 @@ np.mean(a)
 0.768
 
 # second time trying. not really correct  
-scores_conv = []
+scores_conv2 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
 	myTrain=data[train_index]
@@ -308,8 +322,8 @@ for train_index, test_index in kf_total:
 	myTest=data[test_index]
 	expected=y[test_index]
 	model = Sequential()
-	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
-	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=1))
+	model.add(Embedding(len(word_index) + 1,50,input_length=300,weights=[embedding_matrix],dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=2))
 	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
 	model.add(Flatten())
 	model.add(Dense(250))
@@ -323,27 +337,38 @@ for train_index, test_index in kf_total:
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
 	score = model.evaluate(myTest, expected)
-	scores_conv.append(score[1])
+	scores_conv2.append(score[1])
 
 with open('task3_output_second.txt', 'wb') as f:
     pickle.dump(scores_conv, f)
     
 np.mean(scores_conv)
-0.793
 
-# Third time trying 
+
+# Third time trying, unfinished. This model require the input as a four dimensions ndarray
 
 # Embedding
-max_features = len(word_index)+1
+max_features = 40023
 maxlen = 300
 embedding_size = 50
+nb_feature_maps=25
 
 # Convolution
 filter_length = 5
 nb_filter = 200
 pool_length = 4
+bi_gram=2
+tri_gram=3
+batch_size=200
+nb_epoch=2
+nb_pool=2
 
-scores_conv3 = []
+# create the full dataset 
+X_cnn = np.zeros((len(data),1, maxlen ,embedding_size))
+
+
+
+scores_conv4 = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
 	myTrain=data[train_index]
@@ -351,16 +376,19 @@ for train_index, test_index in kf_total:
 	myTest=data[test_index]
 	expected=y[test_index]
 	model = Sequential()
-	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
-	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=1))
-	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
-	model.add(Flatten())
-	model.add(Dense(200))
-	model.add(Dropout(0.2))
+	model.add(Convolution2D(nb_filter,tri_gram, tri_gram, border_mode='valid', input_shape= (1, maxlen, embedding_size)))
 	model.add(Activation('relu'))
+	model.add(Convolution2D(nb_filter,bi_gram,bi_gram))
+	model.add(Activation('relu'))
+	model.add(MaxPooling2D(pool_size=(2,2)))
+	model.add(Dropout(0.2))
+	model.add(Flatten())
+	model.add(Dense(150))
+	model.add(Activation('relu'))
+	model.add(Dropout(0.2))
 	model.add(Dense(1))
 	model.add(Activation('sigmoid'))
 	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=2)
 	score = model.evaluate(myTest, expected)
-	scores_conv3.append(score[1])
+	scores_conv4.append(score[1])
