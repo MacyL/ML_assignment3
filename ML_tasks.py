@@ -408,6 +408,8 @@ for train_index, test_index in kf_total:
 	score = model.evaluate(myTest, expected)
 	scores_conv6.append(score[1])
 # For this model, the nb_epoch ran to the second time and then the accuracy reached 1. So I reduced the nb_epoch number to 5. 
+np.mean(scores_conv6)
+1
 
 
 # Fifth time trail.  This model require the input as a four dimensions ndarray
