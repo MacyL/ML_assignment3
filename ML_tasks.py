@@ -411,9 +411,10 @@ for train_index, test_index in kf_total:
 np.mean(scores_conv6)
 1
 
-
+################################## I have no result for this model, because my computer crashes every time#################
 # Fifth time trail.  This model require the input as a four dimensions ndarray
-# But sadly, my computer crashes when everytime I try to run this model 
+# But sadly, I have no result for this model. 
+
 data = pad_sequences(sequences, maxlen=150)
 
 X_CNN = np.zeros((len(data), 150,50))
@@ -428,21 +429,21 @@ for i in range(len(data)):
 	token_index +=1
 
 # Embedding
-max_features = 40023
-maxlen = 150
-embedding_size = 50
-nb_feature_maps=25
+max_features = 40023 # this is coming from the word_index plus one, this is not freely adjust
+maxlen = 150	# max length is equal to the sequence length 
+embedding_size = 50 # word vector is 50 dimension 
+nb_feature_maps=25 # this can be adjust 
 
 # Convolution
-filter_length = 5
-nb_filter = 200
-pool_length = 4
-bi_gram=2
-tri_gram=3
-batch_size=200
-nb_epoch=2
-nb_pool=2
-
+filter_length = 5 
+nb_filter = 200  # I can understand pictures, 200 cells (the cell we want to see and the surrending cells) each time. 
+pool_length = 4	# this should be able to adjust freely 
+bi_gram=2	# bigram 
+tri_gram=3	# trigram
+batch_size=200  # each time use 200 texts 
+nb_epoch=5  # this can be adjust,  
+nb_pool=2 # this can be adjust 
+ 
 scores_conv7 = []
 kf_total = KFold(len(X_CNN), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
