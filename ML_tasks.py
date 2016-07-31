@@ -15,7 +15,7 @@ from nltk.util import ngrams
 from sklearn import cross_validation
 from sklearn.feature_extraction.text import TfidfVectorizer,HashingVectorizer, TfidfTransformer, CountVectorizer
 from sklearn import metrics
-from numpy import array
+from numpy import array,reshape
 from sklearn import cross_validation
 from sklearn.cross_validation import train_test_split,KFold
 from sklearn.linear_model import LogisticRegression
@@ -268,6 +268,7 @@ for i in range(len(myTexts)):
 	else:
 		y[i]=[False] # negative
 
+# first try 
 scores_conv = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -298,7 +299,7 @@ with open('task3_output.txt', 'rb') as f:
 np.mean(a)
 0.768
 
-# second time trying 
+# second time trying. not really correct  
 scores_conv = []
 kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
 for train_index, test_index in kf_total:
@@ -329,3 +330,37 @@ with open('task3_output_second.txt', 'wb') as f:
     
 np.mean(scores_conv)
 0.793
+
+# Third time trying 
+
+# Embedding
+max_features = len(word_index)+1
+maxlen = 300
+embedding_size = 50
+
+# Convolution
+filter_length = 5
+nb_filter = 200
+pool_length = 4
+
+scores_conv3 = []
+kf_total = KFold(len(data), n_folds=10, shuffle=True, random_state=3)
+for train_index, test_index in kf_total:
+	myTrain=data[train_index]
+	myTrainResponse=y[train_index]
+	myTest=data[test_index]
+	expected=y[test_index]
+	model = Sequential()
+	model.add(Embedding(len(word_index) + 1,50,input_length=300,dropout=0.2))
+	model.add(Convolution1D(nb_filter=200,filter_length=5,border_mode='valid',activation='relu',subsample_length=1))
+	model.add(MaxPooling1D(pool_length=model.output_shape[1]))
+	model.add(Flatten())
+	model.add(Dense(200))
+	model.add(Dropout(0.2))
+	model.add(Activation('relu'))
+	model.add(Dense(1))
+	model.add(Activation('sigmoid'))
+	model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+	model.fit(myTrain, myTrainResponse,batch_size=200, nb_epoch=20)
+	score = model.evaluate(myTest, expected)
+	scores_conv3.append(score[1])
